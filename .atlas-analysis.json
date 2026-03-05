@@ -1,0 +1,65 @@
+{
+  "projectType": "frontend",
+  "projectName": "Los Simpson",
+  "projectDescription": "An interactive React web application for exploring The Simpsons characters and episodes with data from The Simpsons API.",
+  "theme": "almond",
+  "primaryColor": "#e7cd9e",
+  "lightColor": "#74634c",
+  "darkColor": "#1f1b15",
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "quickstart",
+          "installation"
+        ]
+      },
+      {
+        "group": "Features",
+        "pages": [
+          "features/character-gallery",
+          "features/episode-browser",
+          "features/api-integration"
+        ]
+      },
+      {
+        "group": "Components",
+        "pages": [
+          "components/overview",
+          "components/ui-components",
+          "components/routing",
+          "components/data-fetching"
+        ]
+      },
+      {
+        "group": "Development",
+        "pages": [
+          "development/project-structure",
+          "development/styling",
+          "development/typescript",
+          "development/contributing"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Character gallery with pagination (60 pages)",
+    "Episode browser with pagination (39 pages)",
+    "Responsive design with loading states",
+    "Real-time API integration with The Simpsons API",
+    "Character details including age, status, and occupation",
+    "Episode information with air dates and season numbers"
+  ],
+  "publicApiSurface": [
+    "NAV - Navigation component",
+    "PAGE_COUNTER - Pagination component",
+    "IMAGE - Image with loading component",
+    "LOADING - Loading indicator component",
+    "Characters page (/charathers)",
+    "Episodes page (/episodes)",
+    "Explorer page (/explorer)",
+    "Home page (/)"
+  ]
+}
