@@ -1,0 +1,284 @@
+---
+title: Installation
+description: Detailed installation guide for Los Simpson
+---
+
+This guide provides comprehensive instructions for installing Los Simpson on your local development environment.
+
+## Prerequisites
+
+Before installing Los Simpson, ensure your system meets the following requirements:
+
+### Node.js
+
+Los Simpson requires **Node.js 18 or higher**. The project uses modern JavaScript features and Vite as the build tool.
+
+To check your Node.js version:
+
+```bash
+node --version
+```
+
+If you need to install or upgrade Node.js, download it from [nodejs.org](https://nodejs.org/) or use a version manager like [nvm](https://github.com/nvm-sh/nvm).
+
+### Package Manager
+
+You'll need one of the following package managers:
+
+- **npm** (comes with Node.js)
+- **pnpm** (recommended for faster installs)
+- **yarn**
+
+<Tip>This guide shows commands for all three package managers. Choose the one you prefer and stick with it throughout your project.</Tip>
+
+### Git
+
+Git is required to clone the repository. Verify your installation:
+
+```bash
+git --version
+```
+
+Download Git from [git-scm.com](https://git-scm.com/) if needed.
+
+## Installation Steps
+
+<Steps>
+
+<Step title="Clone the repository">
+
+Clone the Los Simpson repository from GitHub:
+
+```bash
+git clone https://github.com/your-username/los-simpson.git
+```
+
+Navigate into the project directory:
+
+```bash
+cd los-simpson
+```
+
+<Note>Replace `your-username` with the actual repository owner's GitHub username.</Note>
+
+</Step>
+
+<Step title="Install dependencies">
+
+Install all required dependencies using your preferred package manager:
+
+<CodeGroup>
+
+```bash npm
+npm install
+```
+
+```bash pnpm
+pnpm install
+```
+
+```bash yarn
+yarn install
+```
+
+</CodeGroup>
+
+This will install:
+
+**Core Dependencies:**
+- React 19.1.1 - UI library
+- React DOM 19.1.1 - React renderer for web
+- React Router DOM 7.9.5 - Client-side routing
+
+**Development Dependencies:**
+- TypeScript 5.9.3 - Type safety and better DX
+- Vite 7.1.7 - Fast build tool and dev server
+- ESLint 9.36.0 - Code linting and quality
+- SWC - Fast TypeScript/JSX compilation
+
+</Step>
+
+<Step title="Verify installation">
+
+Verify that everything is installed correctly by checking the `node_modules` directory:
+
+```bash
+ls node_modules
+```
+
+You should see all the installed packages listed.
+
+</Step>
+
+<Step title="Start the development server">
+
+Launch the development server to ensure everything works:
+
+<CodeGroup>
+
+```bash npm
+npm run dev
+```
+
+```bash pnpm
+pnpm dev
+```
+
+```bash yarn
+yarn dev
+```
+
+</CodeGroup>
+
+If successful, you'll see output similar to:
+
+```
+VITE v7.1.7  ready in XXX ms
+
+➜  Local:   http://localhost:5173/
+➜  Network: use --host to expose
+```
+
+</Step>
+
+<Step title="Access the application">
+
+Open your browser and navigate to the URL shown in the terminal (typically `http://localhost:5173`).
+
+You should see the Los Simpson character gallery loading successfully.
+
+</Step>
+
+</Steps>
+
+## Project Structure
+
+After installation, your project structure will look like this:
+
+```
+los-simpson/
+├── node_modules/      # Installed dependencies
+├── public/            # Static assets
+├── src/               # Source code
+│   ├── components/    # React components
+│   ├── pages/         # Page components
+│   └── ...            # Other source files
+├── package.json       # Project configuration
+├── tsconfig.json      # TypeScript configuration
+├── vite.config.ts     # Vite configuration
+└── README.md          # Project documentation
+```
+
+## Configuration
+
+### Vite Configuration
+
+Los Simpson uses a minimal Vite configuration located in `vite.config.ts`:
+
+```typescript vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+
+export default defineConfig({
+  plugins: [react()],
+})
+```
+
+The SWC plugin provides fast refresh and optimized TypeScript compilation.
+
+### TypeScript Configuration
+
+The project uses TypeScript 5.9.3 with strict type checking enabled. TypeScript configuration is managed through `tsconfig.json` in the project root.
+
+<Note>No environment variables or API keys are required. Los Simpson uses the public Simpsons API which doesn't require authentication.</Note>
+
+## Troubleshooting
+
+<Accordion title="Port 5173 is already in use">
+
+If port 5173 is already occupied, Vite will automatically try the next available port. Check your terminal output for the actual URL.
+
+Alternatively, you can specify a custom port:
+
+```bash
+vite --port 3000
+```
+
+</Accordion>
+
+<Accordion title="Module not found errors">
+
+If you see "Module not found" errors:
+
+1. Delete `node_modules` and lock files:
+   ```bash
+   rm -rf node_modules package-lock.json yarn.lock pnpm-lock.yaml
+   ```
+
+2. Reinstall dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Clear Vite cache:
+   ```bash
+   rm -rf node_modules/.vite
+   ```
+
+</Accordion>
+
+<Accordion title="TypeScript errors">
+
+If you encounter TypeScript compilation errors:
+
+1. Ensure you have TypeScript installed:
+   ```bash
+   npm list typescript
+   ```
+
+2. Run the type checker:
+   ```bash
+   npx tsc --noEmit
+   ```
+
+3. Check your Node.js version meets the minimum requirement (18+)
+
+</Accordion>
+
+<Accordion title="API connection issues">
+
+If characters aren't loading:
+
+1. Check your internet connection
+2. Verify The Simpsons API is accessible: https://thesimpsonsapi.com/
+3. Check browser console for network errors
+4. Ensure no firewall is blocking the API requests
+
+</Accordion>
+
+<Accordion title="ESLint errors during development">
+
+ESLint is configured to check code quality. To run linting manually:
+
+```bash
+npm run lint
+```
+
+Some errors can be auto-fixed:
+
+```bash
+npm run lint -- --fix
+```
+
+</Accordion>
+
+## Next Steps
+
+Now that you have Los Simpson installed:
+
+- Explore the character gallery and pagination features
+- Review the source code to understand the React + TypeScript architecture
+- Check out the component structure in the `src/` directory
+- Try building for production with `npm run build`
+
+<Tip>Use `npm run preview` to test the production build locally before deploying.</Tip>

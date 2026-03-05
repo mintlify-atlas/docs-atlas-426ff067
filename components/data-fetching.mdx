@@ -1,0 +1,437 @@
+---
+title: Data Fetching & State Management
+description: Learn how Los Simpson fetches data from The Simpsons API and manages application state
+---
+
+## Data Fetching Pattern
+
+Los Simpson uses React hooks (`useState` and `useEffect`) with the native Fetch API to retrieve data from [The Simpsons API](https://thesimpsonsapi.com/).
+
+## Core Pattern
+
+The application follows a consistent data fetching pattern across all pages:
+
+1. Initialize state variables for data, pagination, and loading status
+2. Fetch data when component mounts or when dependencies change
+3. Handle loading states with UI feedback
+4. Handle errors gracefully
+5. Update state with fetched data
+
+## Character Data Fetching
+
+### Complete Implementation
+
+Here's the full data fetching implementation from the Characters page:
+
+```tsx title="src/pages/charathers.tsx"
+import { useState, useEffect } from "react"
+import type { ApiResponse, Character } from "../types.d.ts"
+import CardStyle from './../styles/charather.module.css'
+import { NAV, PAGE_COUNTER, LOADING } from './../components/index.ts'
+import { IMAGE } from "../components/index.ts"
+
+export default function Characters() {
+    const [characters, setCharacters] = useState<Character[]>([])
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(true)
+    const totalPages = 60
+    
+    useEffect(() => {
+        document.title = 'Characters | The Simpson'
+    }, [])
+    
+    useEffect(() => {
+        const getCharacters = async () => {
+            setLoading(true);
+            try {
+                const apiCharacters = await fetch(`https://thesimpsonsapi.com/api/characters?page=${page}`)
+                const dataCharacters = await apiCharacters.json() as ApiResponse
+
+                if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+                    setCharacters(dataCharacters.results)
+                }
+            }
+            catch (error) {
+                console.log(error)
+            } finally {
+                setLoading(false)
+            }
+        }
+        getCharacters()
+    }, [page])
+
+    const handleNextPage = () => {
+        if (page < totalPages) {
+            setPage(prevPage => prevPage + 1);
+        }
+    }
+
+    const handlePrevPage = () => {
+        if (page > 1) {
+            setPage(prevPage => prevPage - 1);
+        }
+    }
+
+    return (
+        <main>
+            <NAV />
+            <div className={CardStyle.container}>
+            <PAGE_COUNTER
+            col={true}
+            row={false}
+            title="Popular Characters"
+            showtitlePage={true}
+            page={page}
+            totalPages={totalPages}
+            handleNextPage={handleNextPage}
+            handlePrevPage={handlePrevPage}
+            />
+                <div className={CardStyle.cards}>
+                {!loading && Array.isArray(characters) && characters.length > 0 ? (
+                    characters.map((character, i) => (
+                        <article key={i} className={CardStyle.card}>
+                            <div className={CardStyle.image}>
+                                <h2 className={CardStyle.name}>{character.name}</h2>
+                                <p>{character.occupation}</p>
+                                <div className={CardStyle.imageContainer}>
+                                    <IMAGE src={`https://cdn.thesimpsonsapi.com/200${character.portrait_path}`} alt={character.name} showtext={false}/>
+                                </div>
+                            </div>
+                            <div className={CardStyle.info}>
+                                <p>Age: {character.age === null ? 'Unknown' : character.age}</p>
+                                <span>{character.gender}</span>
+                                <p
+                                className={character.status === 'Alive' ? CardStyle.alive : CardStyle.dead}
+                                >{character.status === 'Alive' ? 'Alive' : 'Deceased'}</p>
+                            </div>
+                        </article>
+                    ))
+                ) : (
+                    <LOADING />
+                )}
+                </div>
+            <PAGE_COUNTER
+            col={false}
+            row={true}
+            title={null}
+            showtitlePage={false}
+            page={page}
+            totalPages={totalPages}
+            handleNextPage={handleNextPage}
+            handlePrevPage={handlePrevPage}
+            />
+            </div>
+        </main>
+    )
+}
+```
+
+## State Management Breakdown
+
+### State Variables
+
+```tsx
+const [characters, setCharacters] = useState<Character[]>([])
+const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(true)
+const totalPages = 60
+```
+
+<ParamField path="characters" type="Character[]">
+  Array of character objects from the API
+</ParamField>
+
+<ParamField path="page" type="number">
+  Current page number (1-indexed)
+</ParamField>
+
+<ParamField path="loading" type="boolean">
+  Loading state to control UI feedback
+</ParamField>
+
+<ParamField path="totalPages" type="number">
+  Total number of pages available (constant)
+</ParamField>
+
+## Data Fetching Logic
+
+### The useEffect Hook
+
+```tsx title="From src/pages/charathers.tsx:15-33"
+useEffect(() => {
+    const getCharacters = async () => {
+        setLoading(true);
+        try {
+            const apiCharacters = await fetch(`https://thesimpsonsapi.com/api/characters?page=${page}`)
+            const dataCharacters = await apiCharacters.json() as ApiResponse
+
+            if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+                setCharacters(dataCharacters.results)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    getCharacters()
+}, [page])
+```
+
+### Key Concepts
+
+<Accordion title="1. Effect Dependency Array">
+  The `[page]` dependency means the effect re-runs whenever `page` changes:
+  
+  ```tsx
+  useEffect(() => {
+    // Fetch data
+  }, [page]) // Re-run when page changes
+  ```
+  
+  This enables automatic data refetching when users navigate between pages.
+</Accordion>
+
+<Accordion title="2. Loading State Management">
+  Loading state is set at three points:
+  
+  ```tsx
+  setLoading(true);  // Before fetch
+  try {
+    // Fetch and process data
+  } catch (error) {
+    // Handle errors
+  } finally {
+    setLoading(false); // After fetch completes (success or error)
+  }
+  ```
+  
+  The `finally` block ensures loading state is cleared regardless of success or failure.
+</Accordion>
+
+<Accordion title="3. Type-Safe API Response">
+  The API response is typed for safety:
+  
+  ```tsx
+  const dataCharacters = await apiCharacters.json() as ApiResponse
+  ```
+  
+  The `ApiResponse` interface ensures TypeScript checks the structure:
+  
+  ```typescript
+  export interface ApiResponse {
+      count: number;
+      next: string | null;
+      prev: string | null;
+      pages: number;
+      results: Character[] & Episode[];
+      id: number;
+  }
+  ```
+</Accordion>
+
+<Accordion title="4. Data Validation">
+  Before updating state, the response is validated:
+  
+  ```tsx
+  if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+      setCharacters(dataCharacters.results)
+  }
+  ```
+  
+  This prevents runtime errors if the API returns unexpected data.
+</Accordion>
+
+## Pagination Handlers
+
+Pagination is managed with simple increment/decrement functions:
+
+```tsx title="From src/pages/charathers.tsx:35-45"
+const handleNextPage = () => {
+    if (page < totalPages) {
+        setPage(prevPage => prevPage + 1);
+    }
+}
+
+const handlePrevPage = () => {
+    if (page > 1) {
+        setPage(prevPage => prevPage - 1);
+    }
+}
+```
+
+<Note>
+Both handlers use the functional update form `prevPage => prevPage + 1` to ensure the latest state value is used, preventing race conditions.
+</Note>
+
+## Episodes Data Fetching
+
+The Episodes page follows an identical pattern:
+
+```tsx title="src/pages/episodes.tsx:16-34"
+useEffect(() => {
+    const getEpisodes = async () => {
+        setLoading(true);
+        try {
+            const apiEpisodes = await fetch(`https://thesimpsonsapi.com/api/episodes?page=${page}`)
+            const dataEpisodes = await apiEpisodes.json() as ApiResponse
+
+            if (dataEpisodes.results && Array.isArray(dataEpisodes.results)) {
+                setEpisodes(dataEpisodes.results)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    getEpisodes()
+}, [page])
+```
+
+The only differences are:
+- Different API endpoint (`/api/episodes` vs `/api/characters`)
+- Different state variable names (`episodes` vs `characters`)
+- Different total pages (39 vs 60)
+
+## Loading State UI
+
+The loading state controls what users see:
+
+```tsx title="From src/pages/charathers.tsx:62-83"
+{!loading && Array.isArray(characters) && characters.length > 0 ? (
+    characters.map((character, i) => (
+        {/* Render character cards */}
+    ))
+) : (
+    <LOADING />
+)}
+```
+
+This ternary operator:
+1. Checks if loading is complete (`!loading`)
+2. Validates data is an array (`Array.isArray(characters)`)
+3. Ensures data exists (`characters.length > 0`)
+4. Renders either the data or the loading spinner
+
+## Error Handling
+
+Errors are caught and logged:
+
+```tsx
+try {
+    // Fetch logic
+}
+catch (error) {
+    console.log(error)
+} finally {
+    setLoading(false)
+}
+```
+
+<Tip>
+In production, consider:
+- Displaying error messages to users
+- Implementing retry logic
+- Logging errors to a monitoring service
+- Showing fallback UI when data fails to load
+</Tip>
+
+## TypeScript Interfaces
+
+The data structures are fully typed:
+
+```typescript title="src/types.d.ts"
+export interface ApiResponse {
+    count: number;
+    next: string | null;
+    prev: string | null;
+    pages: number;
+    results: Character[] & Episode[];
+    id: number;
+}
+
+export interface Character {
+    id: number;
+    name: string;
+    portrait_path: string;
+    age: number | string;
+    gender: string;
+    status: string | undefined;
+    occupation: string[] | undefined;
+}
+
+export interface Episode {
+    id: number;
+    name: string;
+    airdate: string;
+    episode_number: number;
+    image_path: string;
+    synopsis: string;
+    season: number;
+}
+```
+
+## Best Practices Implemented
+
+<CardGroup cols={2}>
+  <Card title="Loading States" icon="spinner">
+    Always show loading feedback during async operations
+  </Card>
+  
+  <Card title="Error Handling" icon="circle-exclamation">
+    Use try-catch blocks to handle fetch errors gracefully
+  </Card>
+  
+  <Card title="Type Safety" icon="shield">
+    TypeScript interfaces ensure data structure correctness
+  </Card>
+  
+  <Card title="Data Validation" icon="check">
+    Validate API responses before updating state
+  </Card>
+</CardGroup>
+
+## Potential Improvements
+
+<Accordion title="Custom Hook for Data Fetching">
+  The pattern could be extracted into a reusable hook:
+  
+  ```tsx
+  function usePaginatedFetch<T>(url: string, initialPage = 1) {
+    const [data, setData] = useState<T[]>([])
+    const [page, setPage] = useState(initialPage)
+    const [loading, setLoading] = useState(true)
+    
+    useEffect(() => {
+      // Fetch logic here
+    }, [url, page])
+    
+    return { data, page, setPage, loading }
+  }
+  ```
+</Accordion>
+
+<Accordion title="React Query / SWR">
+  For more complex apps, consider using data fetching libraries like:
+  - **React Query** - Powerful caching, background updates, optimistic updates
+  - **SWR** - Lightweight, stale-while-revalidate strategy
+  - **RTK Query** - Official Redux data fetching solution
+</Accordion>
+
+<Accordion title="Abort Controllers">
+  Cancel in-flight requests when component unmounts:
+  
+  ```tsx
+  useEffect(() => {
+    const controller = new AbortController()
+    
+    fetch(url, { signal: controller.signal })
+      .then(/* ... */)
+    
+    return () => controller.abort()
+  }, [page])
+  ```
+</Accordion>

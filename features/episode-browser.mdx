@@ -1,0 +1,183 @@
+---
+title: Episode Browser
+description: Browse through 39 pages of The Simpsons episodes with detailed information
+---
+
+The episode browser allows users to explore The Simpsons episodes across 39 pages of content fetched from The Simpsons API.
+
+## Overview
+
+The episode browser displays comprehensive episode information including:
+- Episode name and image
+- Air date
+- Season number
+- Episode number
+- Synopsis
+
+## Episode Data Structure
+
+Each episode is represented by the `Episode` interface:
+
+```typescript types.d.ts
+export interface Episode {
+    id: number;
+    name: string;
+    airdate: string;
+    episode_number: number;
+    image_path: string;
+    synopsis: string;
+    season: number;
+}
+```
+
+### Episode Properties
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the episode
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Title of the episode
+</ParamField>
+
+<ParamField path="airdate" type="string" required>
+  Original air date of the episode. Displays "Unknown" if not available
+</ParamField>
+
+<ParamField path="episode_number" type="number" required>
+  Episode number within the season
+</ParamField>
+
+<ParamField path="image_path" type="string" required>
+  Relative path to the episode's thumbnail image
+</ParamField>
+
+<ParamField path="synopsis" type="string" required>
+  Brief description of the episode's plot
+</ParamField>
+
+<ParamField path="season" type="number" required>
+  Season number the episode belongs to
+</ParamField>
+
+## API Endpoint
+
+Episodes are fetched from The Simpsons API:
+
+```
+https://thesimpsonsapi.com/api/episodes?page={page}
+```
+
+<Info>The API provides 39 pages of episode data covering multiple seasons of The Simpsons.</Info>
+
+## Implementation
+
+### State Management
+
+The episode browser uses React hooks for state management:
+
+```typescript episodes.tsx
+const [episodes, setEpisodes] = useState<Episode[]>([])
+const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(true)
+const totalPages = 39
+```
+
+### Data Fetching
+
+Episodes are fetched using `useEffect` when the page changes:
+
+```typescript episodes.tsx
+useEffect(() => {
+    const getEpisodes = async () => {
+        setLoading(true);
+        try {
+            const apiEpisodes = await fetch(`https://thesimpsonsapi.com/api/episodes?page=${page}`)
+            const dataEpisodes = await apiEpisodes.json() as ApiResponse
+
+            if (dataEpisodes.results && Array.isArray(dataEpisodes.results)) {
+                setEpisodes(dataEpisodes.results)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    getEpisodes()
+}, [page])
+```
+
+### Pagination Controls
+
+Users can navigate between pages using next/previous buttons:
+
+```typescript episodes.tsx
+const handleNextPage = () => {
+    if (page < totalPages) {
+        setPage(prevPage => prevPage + 1);
+    }
+}
+
+const handlePrevPage = () => {
+    if (page > 1) {
+        setPage(prevPage => prevPage - 1);
+    }
+}
+```
+
+## Displaying Episode Data
+
+Each episode is rendered in a card layout with its information:
+
+```typescript episodes.tsx
+{!loading && Array.isArray(episodes) && episodes.length > 0 ? (
+    episodes.map((episode, i) => (
+        <article key={i} className={EpisodeStyle.card}>
+            <div className={EpisodeStyle.image}>
+                <h2>{episode.name}</h2>
+                <div className={EpisodeStyle.imageContainer}>
+                    <IMAGE
+                    src={`https://cdn.thesimpsonsapi.com/500${episode.image_path}`}
+                    alt={episode.name}
+                    showtext={false}
+                    />
+                </div>
+            </div>
+            <div className={EpisodeStyle.info}>
+                <p>
+                    <strong>Air Date:&nbsp;</strong>
+                    <span>{episode.airdate === '' ? 'Unknown' : episode.airdate}</span>
+                </p>
+                <p>
+                    <strong>Season:&nbsp;</strong><span>{episode.season}</span>&nbsp;
+                    <strong>Episode:&nbsp;</strong><span>{episode.episode_number}</span>
+                </p>
+            </div>
+        </article>
+    ))
+) : (
+    <LOADING />
+)}
+```
+
+## Image CDN
+
+<Note>
+  Episode images are served from The Simpsons API CDN at `https://cdn.thesimpsonsapi.com/500{image_path}`, where 500 represents the image width in pixels for higher quality episode thumbnails.
+</Note>
+
+## Data Handling
+
+### Air Date Fallback
+
+The application handles missing air dates gracefully:
+
+```typescript
+{episode.airdate === '' ? 'Unknown' : episode.airdate}
+```
+
+### Loading State
+
+While episodes are being fetched, a loading component is displayed. The loading state is managed through the `loading` state variable and transitions automatically when data is available.

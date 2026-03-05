@@ -1,0 +1,408 @@
+---
+title: 'Styling System'
+description: 'CSS Modules approach and styling patterns used in Los Simpson'
+---
+
+## Overview
+
+Los Simpson uses **CSS Modules** for component-level styling, combined with global CSS for app-wide styles and design tokens. This approach provides:
+
+- **Scoped styles** - No CSS class name conflicts
+- **Type safety** - Import styles like JavaScript modules
+- **Maintainability** - Co-locate styles with components
+- **Performance** - Only load styles when components are used
+
+## Global Styles
+
+Global styles and CSS custom properties are defined in `src/styles/global.css`.
+
+### CSS Custom Properties
+
+```css title="src/styles/global.css"
+:root {
+    --bg-primary: radial-gradient(circle, rgba(61, 228, 244, 1) 0%, rgba(1, 92, 158, 1) 100%);
+    --text-primary: #fff;
+    --bg-button: #FED90F;
+    --text-button: #000;
+    --text-secondary: #000;
+    --bg-button-hover: #e1c41d;
+    --bg-article: #e8f8ff;
+    --loading: #ffda05;
+    --global-hover: #545454;
+}
+```
+
+<Note>
+  CSS custom properties allow for consistent theming across all components. These variables represent The Simpsons' iconic color palette.
+</Note>
+
+### Base Styles
+
+```css title="src/styles/global.css"
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Funel Sans', system-ui, -apple-system, BlinkMacSystemFont, 
+                 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 
+                 'Helvetica Neue', sans-serif;
+    font-style: normal;
+}
+
+body {
+    background: var(--bg-primary);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    color: var(--text-secondary);
+    min-height: 100dvh;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+```
+
+<Tip>
+  The project uses the modern `100dvh` (dynamic viewport height) unit for better mobile support.
+</Tip>
+
+## CSS Modules
+
+Each component has its own CSS Module file with the `.module.css` extension.
+
+### Character Cards
+
+```css title="src/styles/charather.module.css"
+:root {
+    --alive: #9fff31;
+    --dead: #f27373;
+}
+
+.container {
+    display: flex;
+    margin-top: 4.5rem;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.card {
+    transition: border 200ms ease-out;
+    background-color: var(--bg-article);
+    display: flex;
+    gap: .3rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 20rem;
+    height: 24rem;
+    aspect-ratio: 1 / 1;
+    border-radius: 1rem;
+    padding: 1rem;
+    text-align: center;
+    border: #00000000 3px solid;
+    animation: FadeIn 0.5s ease-out;
+}
+
+.card:hover {
+    border: var(--global-hover) 3px solid;
+}
+
+.alive {
+    background-color: var(--alive);
+    border: 2px solid;
+    width: 100px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1rem;
+    padding-block: 2px;
+    text-align: center;
+}
+
+.dead {
+    background-color: var(--dead);
+    border: 2px solid;
+    width: 100px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1rem;
+    padding-block: 2px;
+    text-align: center;
+}
+```
+
+### Episode Cards
+
+```css title="src/styles/episode.module.css"
+.container {
+    margin-top: 4.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.card {
+    width: min(90%, 400px);
+    height: 500px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    background-color: var(--bg-article);
+    color: var(--text-secondary);
+    border-radius: 1rem;
+    border: var(--bg-article) 3px solid;
+    transition: border 200ms ease-out;
+    overflow: hidden;
+}
+
+.card:hover {
+    border: var(--global-hover) 3px solid;
+}
+
+.imageContainer {
+    display: flex;
+    width: 308px;
+    height: 200px;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: .5rem;
+}
+```
+
+### Navigation Styles
+
+```css title="src/styles/nav.module.css"
+.NavBar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: fit-content;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1rem 0 0 1rem;
+    z-index: 2;
+}
+
+.menu {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.menu a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.2rem;
+    width: 150px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .5rem;
+    background-color: var(--bg-article);
+    border: 2px solid;
+    z-index: 1000;
+}
+
+.menu a:hover {
+    background-color: var(--bg-button);
+}
+```
+
+## Using CSS Modules in Components
+
+CSS Modules are imported as JavaScript objects. Class names are accessed as properties.
+
+### Import Pattern
+
+```typescript title="src/pages/charathers.tsx"
+import CardStyle from './../styles/charather.module.css'
+```
+
+### Usage in JSX
+
+```tsx title="src/pages/charathers.tsx"
+export default function Characters() {
+    return (
+        <main>
+            <div className={CardStyle.container}>
+                <div className={CardStyle.cards}>
+                    <article className={CardStyle.card}>
+                        <div className={CardStyle.image}>
+                            <h2 className={CardStyle.name}>Character Name</h2>
+                            <div className={CardStyle.imageContainer}>
+                                {/* Image component */}
+                            </div>
+                        </div>
+                        <div className={CardStyle.info}>
+                            <p className={CardStyle.alive}>Alive</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </main>
+    )
+}
+```
+
+### Conditional Classes
+
+```tsx
+<p className={character.status === 'Alive' ? CardStyle.alive : CardStyle.dead}>
+    {character.status === 'Alive' ? 'Alive' : 'Deceased'}
+</p>
+```
+
+## Styling Patterns
+
+### Layout Pattern
+
+<Tabs>
+  <Tab title="Flexbox Containers">
+    ```css
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+    }
+    ```
+  </Tab>
+  <Tab title="Responsive Cards">
+    ```css
+    .cards {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 2rem;
+        width: 100%;
+        max-width: 1500px;
+        align-items: center;
+        justify-content: center;
+    }
+    ```
+  </Tab>
+  <Tab title="Fluid Sizing">
+    ```css
+    .card {
+        width: min(90%, 400px);
+        height: 500px;
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Hover Effects
+
+All interactive elements have smooth hover transitions:
+
+```css
+.card {
+    border: transparent 3px solid;
+    transition: border 200ms ease-out;
+}
+
+.card:hover {
+    border: var(--global-hover) 3px solid;
+}
+```
+
+### Image Handling
+
+```css
+.imageContainer {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+}
+
+.card img {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    width: 150px;
+}
+```
+
+<Tip>
+  Using `aspect-ratio` and `object-fit: cover` ensures images maintain consistent dimensions while preserving their aspect ratio.
+</Tip>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use CSS Variables" icon="palette">
+    Always reference global CSS custom properties from `:root` for colors and common values.
+  </Card>
+  <Card title="Scoped Modules" icon="lock">
+    Keep component styles in separate `.module.css` files to avoid naming conflicts.
+  </Card>
+  <Card title="Responsive Design" icon="mobile">
+    Use flexible units like `rem`, `%`, and modern CSS functions like `min()` and `max()`.
+  </Card>
+  <Card title="Smooth Transitions" icon="wand-magic-sparkles">
+    Add `transition` properties for interactive elements to enhance user experience.
+  </Card>
+</CardGroup>
+
+## File Organization
+
+```plaintext
+src/
+├── styles/
+│   ├── global.css               # Global styles and variables
+│   ├── charather.module.css     # Character components
+│   ├── episode.module.css       # Episode components
+│   ├── nav.module.css           # Navigation
+│   ├── pageCounter.module.css   # Pagination
+│   ├── loading.module.css       # Loading states
+│   ├── explorer.module.css      # Explorer page
+│   ├── app.module.css           # App layout
+│   └── 404.module.css           # Error page
+```
+
+<Note>
+  Each page or major component has its own dedicated CSS Module file, making styles easy to locate and maintain.
+</Note>
+
+## Loading Global Styles
+
+Global styles are loaded in the main HTML file:
+
+```html title="index.html"
+<head>
+  <link rel="stylesheet" href="./src/styles/global.css"/>
+</head>
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+    Learn about the overall project organization
+  </Card>
+  <Card title="TypeScript" icon="code" href="/development/typescript">
+    Explore type definitions for styled components
+  </Card>
+</CardGroup>

@@ -1,0 +1,221 @@
+---
+title: Routing Configuration
+description: React Router setup and route structure in Los Simpson
+---
+
+## React Router Setup
+
+Los Simpson uses React Router v6 for client-side routing, configured in the application entry point.
+
+## Main Router Configuration
+
+The routing configuration is defined in `src/main.tsx`:
+
+```tsx title="src/main.tsx"
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import './styles/global.css'
+import './assets/fonts/index.css'
+import App from './pages/index.tsx'
+import Charathers from './pages/charathers.tsx'
+import Explorer from './pages/explorer.tsx'
+import NotFound from './pages/404.tsx'
+import EPISODES from './pages/episodes.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<App />} />
+        <Route path='/charathers' element={<Charathers />} />
+        <Route path='/explorer' element={<Explorer />} />
+        <Route path='*' element={<NotFound />} />
+        <Route path='/episodes' element={<EPISODES />} />
+      </Routes>
+    </BrowserRouter>
+  </StrictMode>,
+)
+```
+
+## Available Routes
+
+The application defines the following routes:
+
+<CardGroup cols={2}>
+  <Card title="Home" icon="house">
+    **Path:** `/`
+    
+    **Component:** `App`
+    
+    Landing page with navigation to characters and episodes
+  </Card>
+
+  <Card title="Characters" icon="users">
+    **Path:** `/charathers`
+    
+    **Component:** `Charathers`
+    
+    Paginated list of Simpsons characters from the API
+  </Card>
+
+  <Card title="Episodes" icon="tv">
+    **Path:** `/episodes`
+    
+    **Component:** `EPISODES`
+    
+    Paginated list of Simpsons episodes from the API
+  </Card>
+
+  <Card title="Explorer" icon="compass">
+    **Path:** `/explorer`
+    
+    **Component:** `Explorer`
+    
+    Interactive explorer for browsing API data
+  </Card>
+</CardGroup>
+
+### 404 Route
+
+The application includes a catch-all route for handling non-existent paths:
+
+```tsx
+<Route path='*' element={<NotFound />} />
+```
+
+<Note>
+The `*` path matches any route that hasn't been matched by previous routes, making it perfect for 404 pages.
+</Note>
+
+## Router Features
+
+### BrowserRouter
+
+The application uses `BrowserRouter` which:
+- Uses HTML5 History API for clean URLs (no hash)
+- Enables proper browser back/forward button behavior
+- Supports server-side rendering configurations
+
+### StrictMode
+
+React's StrictMode is enabled, which:
+- Identifies unsafe lifecycle methods
+- Warns about legacy string ref API usage
+- Detects unexpected side effects
+- Ensures components are resilient to future React features
+
+## Navigation Between Routes
+
+Routes are navigated using React Router's `NavLink` component in the NAV component:
+
+```tsx title="From src/components/nav.tsx"
+import { NavLink } from "react-router-dom"
+
+// Inside the component
+<nav ref={navRef} className={navToggle}>
+    <NavLink to='/' onClick={toggleMenu}>Home</NavLink>
+    <NavLink to='https://thesimpsonsapi.com/' target="_blank" rel="noopener noreferrer" onClick={toggleMenu}>Api</NavLink>
+</nav>
+```
+
+<Tip>
+`NavLink` automatically applies an "active" class to the current route, making it easy to style the active navigation item.
+</Tip>
+
+## Route Structure
+
+```
+/
+├── / (Home - App)
+├── /charathers (Characters list)
+├── /episodes (Episodes list)
+├── /explorer (API Explorer)
+└── * (404 - NotFound)
+```
+
+## Adding New Routes
+
+To add a new route to the application:
+
+1. Create a new page component in `src/pages/`
+2. Import the component in `src/main.tsx`
+3. Add a new `<Route>` element within the `<Routes>` component
+
+```tsx
+// 1. Import the new page
+import NewPage from './pages/new-page.tsx'
+
+// 2. Add the route
+<Routes>
+  {/* Existing routes */}
+  <Route path='/new-page' element={<NewPage />} />
+</Routes>
+```
+
+<Accordion title="Route Order Matters">
+  Routes are matched in the order they appear. Always place:
+  - Specific routes before generic ones
+  - The catch-all `*` route last
+  - More specific paths before less specific ones
+
+  ```tsx
+  {/* Correct order */}
+  <Route path='/episodes/latest' element={<Latest />} />
+  <Route path='/episodes' element={<Episodes />} />
+  <Route path='*' element={<NotFound />} />
+  ```
+</Accordion>
+
+## Route-Specific Behavior
+
+### Document Title Management
+
+Each page component sets its own document title using `useEffect`:
+
+```tsx title="From src/pages/charathers.tsx:12-14"
+useEffect(() => {
+    document.title = 'Characters | The Simpson'
+}, [])
+```
+
+This ensures the browser tab shows the appropriate title for each route.
+
+### Page State Persistence
+
+Route changes reset component state by default. Pagination state in the characters and episodes pages is managed locally and resets when navigating away:
+
+```tsx title="From src/pages/charathers.tsx:8-10"
+const [characters, setCharacters] = useState<Character[]>([])
+const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(true)
+```
+
+<Note>
+If you need to persist state across route changes, consider using React Context, URL query parameters, or a state management library.
+</Note>
+
+## Router Configuration Best Practices
+
+- **Use declarative routing** - Define all routes in one place for easy maintenance
+- **Implement 404 handling** - Always include a catch-all route
+- **Lazy load routes** - For larger apps, use React.lazy() to code-split by route
+- **Type-safe routing** - Consider using TypeScript for route parameters and navigation
+
+## External Links
+
+The navigation also supports external links:
+
+```tsx
+<NavLink 
+  to='https://thesimpsonsapi.com/' 
+  target="_blank" 
+  rel="noopener noreferrer"
+>
+  Api
+</NavLink>
+```
+
+<Tip>
+Always include `rel="noopener noreferrer"` when opening external links in new tabs for security and performance.
+</Tip>

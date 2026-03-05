@@ -1,0 +1,75 @@
+---
+title: Component Architecture
+description: Overview of the Los Simpson component structure and organization
+---
+
+## Component Structure
+
+Los Simpson uses a modular component architecture built with React and TypeScript. All components are organized under the `src/components/` directory and exported through a central index file for easy imports.
+
+## Component Exports
+
+The main component exports are defined in `src/components/index.ts`:
+
+```typescript title="src/components/index.ts"
+import Nav from './nav.tsx'
+import explorerData from './data/explorer.ts'
+import loader from './icons/Loading.tsx'
+import PageCounter from './ui/Page.Counter.tsx'
+import ImageWithLoading from './ui/ImageWithLoading.tsx'
+
+export const NAV = Nav
+export const EXPLORER_DATA = explorerData
+export const LOADING = loader
+export const PAGE_COUNTER = PageCounter
+export const IMAGE = ImageWithLoading
+```
+
+## Component Organization
+
+The components are organized into three main categories:
+
+### UI Components (`ui/`)
+- **PAGE_COUNTER** - Pagination controls with page navigation
+- **IMAGE** - Image component with loading state management
+
+### Icon Components (`icons/`)
+- **LOADING** - Animated loading spinner indicator
+
+### Layout Components
+- **NAV** - Main navigation bar with responsive menu
+
+### Data Components (`data/`)
+- **EXPLORER_DATA** - Static data for the explorer page
+
+<CardGroup cols={2}>
+  <Card title="UI Components" icon="palette" href="/components/ui-components">
+    Reusable UI components including pagination, image loading, and loading states
+  </Card>
+  
+  <Card title="Routing" icon="route" href="/components/routing">
+    React Router setup and route configuration
+  </Card>
+  
+  <Card title="Data Fetching" icon="database" href="/components/data-fetching">
+    Data fetching patterns and state management with hooks
+  </Card>
+</CardGroup>
+
+## Import Pattern
+
+All components use a centralized import pattern for consistency:
+
+```tsx
+import { NAV, PAGE_COUNTER, LOADING, IMAGE } from '../components/index.ts'
+```
+
+This approach provides:
+- **Consistent naming** - All component names are in UPPERCASE
+- **Single source of truth** - One import location for all components
+- **Easy refactoring** - Component file locations can change without affecting imports
+- **Better tree-shaking** - Bundlers can optimize unused exports
+
+<Note>
+All components are written in TypeScript with strict type checking enabled, ensuring type safety throughout the application.
+</Note>

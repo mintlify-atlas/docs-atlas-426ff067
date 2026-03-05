@@ -1,0 +1,260 @@
+---
+title: 'Project Structure'
+description: 'Complete overview of the Los Simpson project file and folder organization'
+---
+
+## Directory Structure
+
+The Los Simpson project follows a clean and organized structure typical of modern React + TypeScript applications:
+
+```plaintext
+los-simpson/
+├── public/              # Static assets
+│   └── vite.svg        # Vite logo
+├── src/                # Source code
+│   ├── assets/         # Images, fonts, and other media
+│   │   ├── fonts/      # Custom font files
+│   │   └── images/     # Image assets
+│   ├── components/     # React components
+│   │   ├── data/       # Data-related utilities
+│   │   ├── icons/      # Icon components
+│   │   └── ui/         # UI components
+│   ├── pages/          # Page components (routes)
+│   ├── styles/         # CSS Modules
+│   ├── main.tsx        # Application entry point
+│   └── types.d.ts      # TypeScript type definitions
+├── index.html          # HTML entry point
+├── package.json        # Dependencies and scripts
+├── tsconfig.json       # TypeScript configuration
+├── tsconfig.app.json   # App-specific TypeScript config
+├── tsconfig.node.json  # Node-specific TypeScript config
+├── vite.config.ts      # Vite configuration
+├── eslint.config.js    # ESLint configuration
+└── vercel.json         # Vercel deployment config
+```
+
+## Root Directory Files
+
+<AccordionGroup>
+  <Accordion title="index.html">
+    The main HTML file that serves as the entry point for the application.
+
+    ```html title="index.html"
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <link rel="stylesheet" href="./src/styles/global.css"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Los Simpson</title>
+      </head>
+      <body id="root">
+        <script type="module" src="/src/main.tsx"></script>
+      </body>
+    </html>
+    ```
+  </Accordion>
+
+  <Accordion title="package.json">
+    Defines project dependencies and npm scripts.
+
+    ```json title="package.json"
+    {
+      "name": "los-simpson",
+      "private": true,
+      "version": "0.0.0",
+      "type": "module",
+      "scripts": {
+        "dev": "vite",
+        "build": "tsc -b && vite build",
+        "lint": "eslint .",
+        "preview": "vite preview"
+      }
+    }
+    ```
+
+    <Note>
+      The build script runs TypeScript compilation (`tsc -b`) before building with Vite to ensure type safety.
+    </Note>
+  </Accordion>
+
+  <Accordion title="vite.config.ts">
+    Vite configuration with React plugin.
+
+    ```typescript title="vite.config.ts"
+    import { defineConfig } from 'vite'
+    import react from '@vitejs/plugin-react-swc'
+
+    export default defineConfig({
+      plugins: [react()],
+    })
+    ```
+
+    <Tip>
+      The project uses `@vitejs/plugin-react-swc` for faster builds with the SWC compiler.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="eslint.config.js">
+    ESLint configuration with TypeScript and React rules.
+
+    ```javascript title="eslint.config.js"
+    import js from '@eslint/js'
+    import globals from 'globals'
+    import reactHooks from 'eslint-plugin-react-hooks'
+    import reactRefresh from 'eslint-plugin-react-refresh'
+    import tseslint from 'typescript-eslint'
+    import { defineConfig, globalIgnores } from 'eslint/config'
+
+    export default defineConfig([
+      globalIgnores(['dist']),
+      {
+        files: ['**/*'],
+        extends: [
+          js.configs.recommended,
+          tseslint.configs.recommended,
+          reactHooks.configs['recommended-latest'],
+          reactRefresh.configs.vite,
+        ],
+        languageOptions: {
+          ecmaVersion: 2020,
+          globals: globals.browser,
+        },
+      },
+    ])
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Source Directory Structure
+
+### `/src/assets/`
+Contains all static assets used in the application:
+
+- **`fonts/`** - Custom web fonts (Funnel Sans, Concert One)
+- **`images/`** - Image files (family picture, logo)
+- **`index.ts`** - Central export file for assets
+
+```plaintext
+assets/
+├── fonts/
+│   ├── ConcertOne-Regular.woff2
+│   ├── FunnelSans-VariableFont_wght.woff2
+│   └── index.css
+├── images/
+│   ├── Simpsons_FamilyPicture.png
+│   └── logo.png
+├── react.svg
+└── index.ts
+```
+
+### `/src/components/`
+Reusable React components organized by purpose:
+
+```plaintext
+components/
+├── data/
+│   └── explorer.ts          # Data exploration utilities
+├── icons/
+│   └── Loading.tsx          # Loading icon component
+├── ui/
+│   ├── ImageWithLoading.tsx # Image component with loading state
+│   ├── Loading.tsx          # Loading spinner component
+│   ├── Page.Characters.tsx  # Character page component
+│   └── Page.Counter.tsx     # Pagination counter component
+├── TimeOut.tsx              # Timeout component
+├── nav.tsx                  # Navigation component
+└── index.ts                 # Component exports
+```
+
+<Note>
+  Components are grouped by functionality: `data/` for data utilities, `icons/` for icon components, and `ui/` for user interface components.
+</Note>
+
+### `/src/pages/`
+Page-level components representing different routes:
+
+```plaintext
+pages/
+├── 404.tsx          # Not found page
+├── charathers.tsx   # Characters browsing page
+├── episodes.tsx     # Episodes browsing page
+├── explorer.tsx     # Explorer page
+└── index.tsx        # Home page
+```
+
+### `/src/styles/`
+CSS Modules for component-specific styling:
+
+```plaintext
+styles/
+├── 404.module.css           # 404 page styles
+├── app.module.css           # Main app styles
+├── charather.module.css     # Character card styles
+├── episode.module.css       # Episode card styles
+├── explorer.module.css      # Explorer page styles
+├── global.css               # Global styles and CSS variables
+├── loading.module.css       # Loading component styles
+├── nav.module.css           # Navigation styles
+└── pageCounter.module.css   # Pagination styles
+```
+
+<Tip>
+  All component-specific styles use CSS Modules (`.module.css`) for scoped styling, while `global.css` contains global styles and CSS custom properties.
+</Tip>
+
+## Key Files
+
+### `src/main.tsx`
+The application entry point that renders the React app.
+
+### `src/types.d.ts`
+Central location for all TypeScript type definitions used throughout the application. See the [TypeScript documentation](/development/typescript) for details.
+
+## TypeScript Configuration
+
+The project uses a multi-file TypeScript configuration:
+
+<CardGroup cols={2}>
+  <Card title="tsconfig.json" icon="gear">
+    Root configuration that references other config files
+  </Card>
+  <Card title="tsconfig.app.json" icon="code">
+    Application-specific TypeScript settings
+  </Card>
+  <Card title="tsconfig.node.json" icon="server">
+    Node.js environment settings for build tools
+  </Card>
+</CardGroup>
+
+## Build Output
+
+When you run `npm run build`, the following happens:
+
+<Steps>
+  <Step title="TypeScript Compilation">
+    TypeScript compiles and type-checks all `.ts` and `.tsx` files
+  </Step>
+  <Step title="Vite Build">
+    Vite bundles the application for production
+  </Step>
+  <Step title="Output to dist/">
+    Optimized static files are generated in the `dist/` directory
+  </Step>
+</Steps>
+
+<Warning>
+  The `dist/` directory is git-ignored and should never be committed to version control.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Styling System" icon="palette" href="/development/styling">
+    Learn about CSS Modules and the styling approach
+  </Card>
+  <Card title="TypeScript Types" icon="code" href="/development/typescript">
+    Explore type definitions and TypeScript usage
+  </Card>
+</CardGroup>

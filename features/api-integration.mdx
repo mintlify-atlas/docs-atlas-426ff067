@@ -1,0 +1,213 @@
+---
+title: API Integration
+description: How Los Simpson integrates with The Simpsons API for fetching character and episode data
+---
+
+Los Simpson uses [The Simpsons API](https://thesimpsonsapi.com) to fetch character and episode data. The application implements a consistent data fetching pattern across all pages using React hooks and TypeScript.
+
+## API Response Structure
+
+All API responses follow a standardized structure defined by the `ApiResponse` interface:
+
+```typescript types.d.ts
+export interface ApiResponse {
+    count: number;
+    next: string | null;
+    prev: string | null;
+    pages: number;
+    results: Character[] & Episode[];
+    id: number;
+}
+```
+
+### Response Fields
+
+<ResponseField name="count" type="number" required>
+  Total number of items available across all pages
+</ResponseField>
+
+<ResponseField name="next" type="string | null" required>
+  URL to the next page of results, or null if on the last page
+</ResponseField>
+
+<ResponseField name="prev" type="string | null" required>
+  URL to the previous page of results, or null if on the first page
+</ResponseField>
+
+<ResponseField name="pages" type="number" required>
+  Total number of pages available
+</ResponseField>
+
+<ResponseField name="results" type="Character[] & Episode[]" required>
+  Array containing the actual data items (characters or episodes)
+</ResponseField>
+
+<ResponseField name="id" type="number" required>
+  Response identifier
+</ResponseField>
+
+## API Endpoints
+
+The application uses two main API endpoints:
+
+<Tabs>
+  <Tab title="Characters">
+    ```
+    https://thesimpsonsapi.com/api/characters?page={page}
+    ```
+    
+    Fetches paginated character data. Supports 60 pages total.
+  </Tab>
+  <Tab title="Episodes">
+    ```
+    https://thesimpsonsapi.com/api/episodes?page={page}
+    ```
+    
+    Fetches paginated episode data. Supports 39 pages total.
+  </Tab>
+</Tabs>
+
+## Data Fetching Pattern
+
+Both the character gallery and episode browser implement the same data fetching pattern using React hooks.
+
+### State Management
+
+Each page maintains three key pieces of state:
+
+```typescript
+const [data, setData] = useState<Character[] | Episode[]>([])
+const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(true)
+```
+
+- `data`: Stores the fetched characters or episodes
+- `page`: Tracks the current page number
+- `loading`: Controls the loading state UI
+
+### useEffect Hook
+
+Data is fetched whenever the page changes using the `useEffect` hook:
+
+```typescript charathers.tsx
+useEffect(() => {
+    const getCharacters = async () => {
+        setLoading(true);
+        try {
+            const apiCharacters = await fetch(`https://thesimpsonsapi.com/api/characters?page=${page}`)
+            const dataCharacters = await apiCharacters.json() as ApiResponse
+
+            if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+                setCharacters(dataCharacters.results)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    getCharacters()
+}, [page])
+```
+
+<Note>
+  The `useEffect` dependency array includes `[page]`, ensuring data is refetched whenever the user navigates to a different page.
+</Note>
+
+## Error Handling
+
+The application implements try-catch blocks for error handling:
+
+```typescript episodes.tsx
+try {
+    const apiEpisodes = await fetch(`https://thesimpsonsapi.com/api/episodes?page=${page}`)
+    const dataEpisodes = await apiEpisodes.json() as ApiResponse
+
+    if (dataEpisodes.results && Array.isArray(dataEpisodes.results)) {
+        setEpisodes(dataEpisodes.results)
+    }
+}
+catch (error) {
+    console.log(error)
+} finally {
+    setLoading(false)
+}
+```
+
+### Error Handling Strategy
+
+1. **Try Block**: Attempts to fetch and parse API data
+2. **Catch Block**: Logs errors to console for debugging
+3. **Finally Block**: Ensures loading state is reset regardless of success/failure
+4. **Result Validation**: Checks if `results` exists and is an array before updating state
+
+<Info>
+  The application validates that `dataCharacters.results` or `dataEpisodes.results` exists and is an array before updating state to prevent rendering errors.
+</Info>
+
+## Loading States
+
+The application provides visual feedback during data fetching:
+
+```typescript
+{!loading && Array.isArray(characters) && characters.length > 0 ? (
+    // Render character cards
+) : (
+    <LOADING />
+)}
+```
+
+### Loading State Flow
+
+1. **Initial Load**: `loading` is set to `true` when component mounts
+2. **Fetch Start**: `loading` set to `true` when page changes
+3. **Fetch Complete**: `loading` set to `false` in the `finally` block
+4. **UI Update**: Components conditionally render based on loading state
+
+## TypeScript Type Safety
+
+The API integration uses TypeScript's type system for safety:
+
+```typescript
+const dataCharacters = await apiCharacters.json() as ApiResponse
+```
+
+Responses are cast to `ApiResponse` type, ensuring:
+- Type checking at compile time
+- IDE autocomplete support
+- Runtime type validation through conditional checks
+
+## Pagination Implementation
+
+The application manages pagination through handler functions:
+
+```typescript charathers.tsx
+const handleNextPage = () => {
+    if (page < totalPages) {
+        setPage(prevPage => prevPage + 1);
+    }
+}
+
+const handlePrevPage = () => {
+    if (page > 1) {
+        setPage(prevPage => prevPage - 1);
+    }
+}
+```
+
+<Accordion title="Pagination Best Practices">
+  - Uses functional state updates (`prevPage => prevPage + 1`) to avoid stale state
+  - Implements boundary checks to prevent invalid page numbers
+  - Triggers automatic data refetch through `useEffect` dependency
+  - Maintains consistent page state across navigation events
+</Accordion>
+
+## CDN Integration
+
+Images are served from The Simpsons API CDN:
+
+- **Character portraits**: `https://cdn.thesimpsonsapi.com/200{portrait_path}`
+- **Episode images**: `https://cdn.thesimpsonsapi.com/500{image_path}`
+
+The number in the URL (200 or 500) represents the image width in pixels, allowing for optimized image loading based on the use case.

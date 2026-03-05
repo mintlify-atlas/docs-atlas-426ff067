@@ -1,0 +1,167 @@
+---
+title: Character Gallery
+description: Browse through 60 pages of The Simpsons characters with detailed information
+---
+
+The character gallery is the main feature for exploring The Simpsons characters. Users can browse through 60 pages of character data fetched from The Simpsons API.
+
+## Overview
+
+The character gallery displays character information including:
+- Character name and portrait
+- Age (or "Unknown" if not available)
+- Gender
+- Status (Alive/Deceased)
+- Occupation
+
+## Character Data Structure
+
+Each character is represented by the `Character` interface:
+
+```typescript types.d.ts
+export interface Character {
+    id: number;
+    name: string;
+    portrait_path: string;
+    age: number | string;
+    gender: string;
+    status: string | undefined;
+    occupation: string[] | undefined;
+}
+```
+
+### Character Properties
+
+<ParamField path="id" type="number" required>
+  Unique identifier for the character
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Full name of the character
+</ParamField>
+
+<ParamField path="portrait_path" type="string" required>
+  Relative path to the character's portrait image
+</ParamField>
+
+<ParamField path="age" type="number | string" required>
+  Character's age. Can be a number or string (e.g., "Unknown")
+</ParamField>
+
+<ParamField path="gender" type="string" required>
+  Character's gender
+</ParamField>
+
+<ParamField path="status" type="string | undefined">
+  Character's living status ("Alive" or other)
+</ParamField>
+
+<ParamField path="occupation" type="string[] | undefined">
+  Array of character's occupations
+</ParamField>
+
+## API Endpoint
+
+Characters are fetched from The Simpsons API:
+
+```
+https://thesimpsonsapi.com/api/characters?page={page}
+```
+
+<Info>The API supports 60 pages of character data, with multiple characters per page.</Info>
+
+## Implementation
+
+### State Management
+
+The character gallery uses React hooks for state management:
+
+```typescript charathers.tsx
+const [characters, setCharacters] = useState<Character[]>([])
+const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(true)
+const totalPages = 60
+```
+
+### Data Fetching
+
+Characters are fetched using `useEffect` when the page changes:
+
+```typescript charathers.tsx
+useEffect(() => {
+    const getCharacters = async () => {
+        setLoading(true);
+        try {
+            const apiCharacters = await fetch(`https://thesimpsonsapi.com/api/characters?page=${page}`)
+            const dataCharacters = await apiCharacters.json() as ApiResponse
+
+            if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+                setCharacters(dataCharacters.results)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    getCharacters()
+}, [page])
+```
+
+### Pagination Controls
+
+Users can navigate between pages using next/previous buttons:
+
+```typescript charathers.tsx
+const handleNextPage = () => {
+    if (page < totalPages) {
+        setPage(prevPage => prevPage + 1);
+    }
+}
+
+const handlePrevPage = () => {
+    if (page > 1) {
+        setPage(prevPage => prevPage - 1);
+    }
+}
+```
+
+## Displaying Character Data
+
+Each character is rendered in a card layout with their information:
+
+```typescript charathers.tsx
+{!loading && Array.isArray(characters) && characters.length > 0 ? (
+    characters.map((character, i) => (
+        <article key={i} className={CardStyle.card}>
+            <div className={CardStyle.image}>
+                <h2 className={CardStyle.name}>{character.name}</h2>
+                <p>{character.occupation}</p>
+                <div className={CardStyle.imageContainer}>
+                    <IMAGE src={`https://cdn.thesimpsonsapi.com/200${character.portrait_path}`} alt={character.name} showtext={false}/>
+                </div>
+            </div>
+            <div className={CardStyle.info}>
+                <p>Age: {character.age === null ? 'Unknown' : character.age}</p>
+                <span>{character.gender}</span>
+                <p
+                className={character.status === 'Alive' ? CardStyle.alive : CardStyle.dead}
+                >{character.status === 'Alive' ? 'Alive' : 'Deceased'}</p>
+            </div>
+        </article>
+    ))
+) : (
+    <LOADING />
+)}
+```
+
+## Image CDN
+
+<Note>
+  Character portraits are served from The Simpsons API CDN at `https://cdn.thesimpsonsapi.com/200{portrait_path}`, where 200 represents the image width in pixels.
+</Note>
+
+## Loading State
+
+While characters are being fetched, a loading component is displayed to provide feedback to users. The loading state is managed through the `loading` state variable and controlled by the async fetch operation.

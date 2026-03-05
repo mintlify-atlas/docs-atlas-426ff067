@@ -1,0 +1,508 @@
+---
+title: 'Contributing Guide'
+description: 'How to contribute to the Los Simpson project'
+---
+
+## Welcome Contributors!
+
+Thank you for your interest in contributing to Los Simpson! This guide will help you get started with contributing to the project.
+
+<Note>
+  Los Simpson is an open-source project that welcomes contributions from developers of all skill levels.
+</Note>
+
+## Getting Started
+
+### Prerequisites
+
+Before you begin, make sure you have the following installed:
+
+- **Node.js** (v18 or higher recommended)
+- **Package Manager**: npm, yarn, or pnpm
+- **Git** for version control
+- A code editor (VS Code recommended)
+
+### Setting Up Your Development Environment
+
+<Steps>
+  <Step title="Fork the Repository">
+    Fork the Los Simpson repository on GitHub to your account.
+  </Step>
+  
+  <Step title="Clone Your Fork">
+    ```bash
+    git clone https://github.com/your-username/los-simpson.git
+    cd los-simpson
+    ```
+  </Step>
+  
+  <Step title="Install Dependencies">
+    Choose your preferred package manager:
+    
+    ```bash
+    # Using pnpm (recommended)
+    pnpm install
+    
+    # Using npm
+    npm install
+    
+    # Using yarn
+    yarn install
+    ```
+  </Step>
+  
+  <Step title="Start Development Server">
+    ```bash
+    npm run dev
+    ```
+    
+    The app will be available at `http://localhost:5173`
+  </Step>
+</Steps>
+
+## Available Scripts
+
+The project includes several npm scripts for development:
+
+```json title="package.json scripts"
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  }
+}
+```
+
+<CardGroup cols={2}>
+  <Card title="npm run dev" icon="code">
+    Start the development server with hot module replacement (HMR)
+  </Card>
+  <Card title="npm run build" icon="hammer">
+    Type-check with TypeScript and build for production
+  </Card>
+  <Card title="npm run lint" icon="check">
+    Run ESLint to check code quality and style
+  </Card>
+  <Card title="npm run preview" icon="eye">
+    Preview the production build locally
+  </Card>
+</CardGroup>
+
+## Development Workflow
+
+### Creating a New Branch
+
+Always create a new branch for your changes:
+
+```bash
+git checkout -b feature/your-feature-name
+# or
+git checkout -b fix/bug-description
+```
+
+<Tip>
+  Use descriptive branch names:
+  - `feature/` for new features
+  - `fix/` for bug fixes
+  - `docs/` for documentation
+  - `refactor/` for code refactoring
+</Tip>
+
+### Making Changes
+
+<Steps>
+  <Step title="Write Your Code">
+    Make your changes following the project's coding standards.
+  </Step>
+  
+  <Step title="Test Your Changes">
+    Run the development server and verify your changes work as expected:
+    ```bash
+    npm run dev
+    ```
+  </Step>
+  
+  <Step title="Run the Linter">
+    Ensure your code passes linting:
+    ```bash
+    npm run lint
+    ```
+  </Step>
+  
+  <Step title="Build the Project">
+    Verify the production build works:
+    ```bash
+    npm run build
+    ```
+  </Step>
+</Steps>
+
+### Committing Changes
+
+Write clear, descriptive commit messages:
+
+```bash
+git add .
+git commit -m "Add character filter functionality"
+```
+
+<Accordion title="Commit Message Guidelines">
+  - Use present tense ("Add feature" not "Added feature")
+  - Keep the first line under 50 characters
+  - Reference issue numbers when applicable
+  - Be descriptive but concise
+  
+  **Examples:**
+  - ✅ `Add search functionality to character page`
+  - ✅ `Fix pagination bug on episode list`
+  - ✅ `Update character card styling`
+  - ❌ `Fixed stuff`
+  - ❌ `Updates`
+</Accordion>
+
+### Pushing Changes
+
+```bash
+git push origin feature/your-feature-name
+```
+
+### Creating a Pull Request
+
+<Steps>
+  <Step title="Open a Pull Request">
+    Go to the original repository on GitHub and click "New Pull Request"
+  </Step>
+  
+  <Step title="Describe Your Changes">
+    - Provide a clear title
+    - Describe what changes you made
+    - Explain why these changes are needed
+    - Reference any related issues
+  </Step>
+  
+  <Step title="Wait for Review">
+    Maintainers will review your PR and may request changes
+  </Step>
+</Steps>
+
+## Code Standards
+
+### TypeScript Guidelines
+
+<Accordion title="Type Safety">
+  - Always define interfaces for component props
+  - Use the centralized `types.d.ts` file for type definitions
+  - Avoid using `any` type
+  - Type all state variables explicitly when needed
+  
+  ```tsx
+  // ✅ Good
+  const [characters, setCharacters] = useState<Character[]>([])
+  
+  // ❌ Avoid
+  const [characters, setCharacters] = useState<any>([])
+  ```
+</Accordion>
+
+<Accordion title="Import Patterns">
+  - Use type-only imports for types
+  - Group imports logically
+  
+  ```tsx
+  // ✅ Good
+  import { useState, useEffect } from "react"
+  import type { Character, ApiResponse } from "../types.d.ts"
+  import CardStyle from './../styles/charather.module.css'
+  ```
+</Accordion>
+
+### ESLint Configuration
+
+The project uses a comprehensive ESLint setup:
+
+```javascript title="eslint.config.js"
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs['recommended-latest'],
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+```
+
+<Note>
+  ESLint is configured to enforce:
+  - React Hooks rules
+  - TypeScript best practices
+  - React Refresh requirements
+  - Modern JavaScript standards
+</Note>
+
+### Styling Guidelines
+
+<Tabs>
+  <Tab title="CSS Modules">
+    - Use CSS Modules for component-specific styles
+    - Name files with `.module.css` extension
+    - Use camelCase for class names
+    
+    ```css
+    /* ✅ Good */
+    .characterCard { }
+    .imageContainer { }
+    
+    /* ❌ Avoid */
+    .character-card { }
+    ```
+  </Tab>
+  
+  <Tab title="CSS Variables">
+    - Use global CSS variables from `global.css`
+    - Don't hardcode colors
+    
+    ```css
+    /* ✅ Good */
+    background-color: var(--bg-article);
+    
+    /* ❌ Avoid */
+    background-color: #e8f8ff;
+    ```
+  </Tab>
+  
+  <Tab title="Responsive Design">
+    - Use flexible units (`rem`, `%`, `min()`, `max()`)
+    - Avoid fixed pixel widths where possible
+    - Test on different screen sizes
+    
+    ```css
+    /* ✅ Good */
+    width: min(90%, 400px);
+    
+    /* ❌ Avoid */
+    width: 400px;
+    ```
+  </Tab>
+</Tabs>
+
+### Component Guidelines
+
+- Keep components focused and single-purpose
+- Use functional components with hooks
+- Extract reusable logic into custom hooks
+- Organize components by feature in appropriate directories
+
+```tsx
+// ✅ Good: Clear, focused component
+export default function CharacterCard({ character }: { character: Character }) {
+    return (
+        <article className={styles.card}>
+            <h2>{character.name}</h2>
+            <p>{character.occupation}</p>
+        </article>
+    )
+}
+```
+
+## Project Structure Guidelines
+
+When adding new files, follow the existing structure:
+
+```plaintext
+src/
+├── assets/          # Images, fonts, static files
+├── components/      # Reusable components
+│   ├── data/       # Data utilities
+│   ├── icons/      # Icon components
+│   └── ui/         # UI components
+├── pages/          # Page-level components
+├── styles/         # CSS Modules
+└── types.d.ts      # Type definitions
+```
+
+<Warning>
+  Don't create new top-level directories in `src/` without discussing with maintainers first.
+</Warning>
+
+## Testing Your Changes
+
+### Manual Testing Checklist
+
+- [ ] Changes work in development mode (`npm run dev`)
+- [ ] Production build succeeds (`npm run build`)
+- [ ] No TypeScript errors
+- [ ] No ESLint errors or warnings
+- [ ] UI looks correct on different screen sizes
+- [ ] No console errors in browser
+- [ ] Page navigation works correctly
+- [ ] API calls complete successfully
+
+### Build Verification
+
+```bash
+# Run full build process
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+<Tip>
+  Always test the production build before submitting a PR. Development mode may hide some issues.
+</Tip>
+
+## Reporting Issues
+
+### Bug Reports
+
+When reporting a bug, include:
+
+<Accordion title="Bug Report Template">
+  **Description**
+  A clear description of the bug
+  
+  **Steps to Reproduce**
+  1. Go to '...'
+  2. Click on '...'
+  3. Scroll down to '...'
+  4. See error
+  
+  **Expected Behavior**
+  What you expected to happen
+  
+  **Actual Behavior**
+  What actually happened
+  
+  **Environment**
+  - OS: [e.g. Windows 11, macOS 14]
+  - Browser: [e.g. Chrome 120, Firefox 121]
+  - Node version: [e.g. 18.17.0]
+  
+  **Screenshots**
+  If applicable, add screenshots
+</Accordion>
+
+### Feature Requests
+
+When suggesting a new feature:
+
+<Accordion title="Feature Request Template">
+  **Problem Statement**
+  Describe the problem this feature would solve
+  
+  **Proposed Solution**
+  Describe your proposed solution
+  
+  **Alternatives Considered**
+  Other approaches you've thought about
+  
+  **Additional Context**
+  Any other context or screenshots
+</Accordion>
+
+## Code Review Process
+
+When your PR is submitted:
+
+<Steps>
+  <Step title="Automated Checks">
+    GitHub Actions will run automated checks (if configured)
+  </Step>
+  
+  <Step title="Maintainer Review">
+    A maintainer will review your code and may request changes
+  </Step>
+  
+  <Step title="Address Feedback">
+    Make requested changes and push to your branch
+  </Step>
+  
+  <Step title="Approval & Merge">
+    Once approved, your PR will be merged
+  </Step>
+</Steps>
+
+<Note>
+  Be patient during code review. Maintainers may take some time to respond, especially for complex changes.
+</Note>
+
+## Getting Help
+
+If you need help:
+
+- Check existing documentation
+- Search for similar issues on GitHub
+- Ask questions in GitHub Discussions (if available)
+- Reach out to maintainers
+
+## Resources
+
+<CardGroup cols={2}>
+  <Card title="React Docs" icon="react" href="https://react.dev/">
+    Official React documentation
+  </Card>
+  <Card title="TypeScript Docs" icon="code" href="https://www.typescriptlang.org/docs/">
+    TypeScript handbook and guides
+  </Card>
+  <Card title="Vite Guide" icon="bolt" href="https://vitejs.dev/guide/">
+    Vite build tool documentation
+  </Card>
+  <Card title="The Simpsons API" icon="database" href="https://thesimpsonsapi.com/">
+    API documentation
+  </Card>
+</CardGroup>
+
+## Code of Conduct
+
+Be respectful and professional when contributing:
+
+- Be welcoming to newcomers
+- Respect different viewpoints and experiences
+- Accept constructive criticism gracefully
+- Focus on what's best for the project
+- Show empathy towards other contributors
+
+<Warning>
+  Harassment, trolling, or discriminatory behavior will not be tolerated.
+</Warning>
+
+## License
+
+By contributing to Los Simpson, you agree that your contributions will be licensed under the same license as the project.
+
+---
+
+<Note>
+  Thank you for contributing to Los Simpson! Your efforts help make this project better for everyone.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+    Understand the codebase organization
+  </Card>
+  <Card title="Styling Guide" icon="palette" href="/development/styling">
+    Learn the styling system
+  </Card>
+  <Card title="TypeScript Guide" icon="code" href="/development/typescript">
+    Master the type system
+  </Card>
+</CardGroup>

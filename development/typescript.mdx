@@ -1,0 +1,450 @@
+---
+title: 'TypeScript Usage'
+description: 'TypeScript configuration, type definitions, and typing patterns in Los Simpson'
+---
+
+## Overview
+
+Los Simpson is built with **TypeScript** for type safety, better developer experience, and maintainable code. All type definitions are centralized in `src/types.d.ts` and the project uses strict TypeScript configuration.
+
+## Type Definitions
+
+All interfaces and types are defined in a central location:
+
+### API Response Types
+
+```typescript title="src/types.d.ts"
+export interface ApiResponse {
+    count: number;
+    next: string | null;
+    prev: string | null;
+    pages: number;
+    results: Character[] & Episode[];
+    id: number;
+}
+```
+
+<Note>
+  The `ApiResponse` interface represents the structure returned by The Simpsons API. The `results` field can contain either characters or episodes.
+</Note>
+
+### Character Interface
+
+```typescript title="src/types.d.ts"
+export interface Character {
+    id: number;
+    name: string;
+    portrait_path: string;
+    age: number | string;
+    gender: string;
+    status: string | undefined;
+    occupation: string[] | undefined;
+}
+```
+
+<Accordion title="Character Fields Explained">
+  - **id** - Unique identifier for the character
+  - **name** - Character's full name
+  - **portrait_path** - Relative path to character portrait image
+  - **age** - Can be a number or string (e.g., "Unknown")
+  - **gender** - Character's gender
+  - **status** - "Alive" or other status, optional
+  - **occupation** - Array of occupations, optional
+</Accordion>
+
+### Episode Interface
+
+```typescript title="src/types.d.ts"
+export interface Episode {
+    id: number;
+    name: string;
+    airdate: string;
+    episode_number: number;
+    image_path: string;
+    synopsis: string;
+    season: number;
+}
+```
+
+### Component Props Interfaces
+
+#### PageCounterProps
+
+```typescript title="src/types.d.ts"
+export interface PageCounterProps {
+    handleNextPage?: () => void;
+    handlePrevPage?: () => void;
+    page: number;
+    totalPages: number;
+    showtitlePage: boolean;
+    title: string | null;
+    row: boolean;
+    col: boolean;
+}
+```
+
+<Tip>
+  Optional props use the `?` operator. The `handleNextPage` and `handlePrevPage` functions are optional because some instances may not need pagination controls.
+</Tip>
+
+#### ImageProps
+
+```typescript title="src/types.d.ts"
+export interface ImageProps {
+    src: string;
+    alt: string;
+    className?: string;
+    showtext: boolean;
+}
+```
+
+## Using Types in Components
+
+### Importing Types
+
+```typescript
+import type { ApiResponse, Character } from "../types.d.ts"
+```
+
+<Note>
+  The `type` keyword in imports is a TypeScript feature that indicates a type-only import, which is removed during compilation.
+</Note>
+
+### Typed State
+
+```tsx title="src/pages/charathers.tsx"
+import { useState, useEffect } from "react"
+import type { ApiResponse, Character } from "../types.d.ts"
+
+export default function Characters() {
+    const [characters, setCharacters] = useState<Character[]>([])
+    const [page, setPage] = useState(1);
+    const [loading, setLoading] = useState(true)
+    const totalPages = 60
+    
+    // ...
+}
+```
+
+<Accordion title="Type Annotation Breakdown">
+  - `useState<Character[]>([])` - Creates state that holds an array of Character objects
+  - `useState(1)` - TypeScript infers the type as `number`
+  - `useState(true)` - TypeScript infers the type as `boolean`
+</Accordion>
+
+### Typed API Responses
+
+```tsx title="src/pages/charathers.tsx"
+useEffect(() => {
+    const getCharacters = async () => {
+        setLoading(true);
+        try {
+            const apiCharacters = await fetch(
+                `https://thesimpsonsapi.com/api/characters?page=${page}`
+            )
+            const dataCharacters = await apiCharacters.json() as ApiResponse
+
+            if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+                setCharacters(dataCharacters.results)
+            }
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoading(false)
+        }
+    }
+    getCharacters()
+}, [page])
+```
+
+<Tip>
+  Type assertions with `as ApiResponse` ensure the JSON response matches the expected structure, providing autocomplete and type checking.
+</Tip>
+
+### Typed Component Props
+
+```tsx title="src/components/ui/Page.Counter.tsx"
+import type { PageCounterProps } from '../../types.d.ts';
+
+export default function PAGE_COUNTER({ 
+    handleNextPage, 
+    handlePrevPage, 
+    page = 1, 
+    totalPages, 
+    showtitlePage = true 
+}: PageCounterProps) {
+    return(
+        <div>
+            {showtitlePage && (
+                <h1>Popular Characters</h1>
+            )}
+            <div>
+                <button onClick={handlePrevPage} disabled={page === 1}>
+                    Previous page
+                </button>
+                <button onClick={handleNextPage} disabled={page === totalPages}>
+                    Next Page
+                </button>
+            </div>
+            <div>
+                <p>Page {page} of {totalPages}</p>
+            </div>
+        </div>
+    )
+}
+```
+
+## TypeScript Configuration
+
+The project uses a multi-file TypeScript configuration setup.
+
+### Root Configuration
+
+```json title="tsconfig.json"
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+```
+
+<Note>
+  The root config uses project references to separate app code from build tool configuration.
+</Note>
+
+### Application Configuration
+
+```json title="tsconfig.app.json"
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
+}
+```
+
+### Key Configuration Options
+
+<Tabs>
+  <Tab title="Compiler Settings">
+    - **target**: `ES2022` - Modern JavaScript features
+    - **module**: `ESNext` - Latest module system
+    - **jsx**: `react-jsx` - New JSX transform (no React import needed)
+    - **moduleResolution**: `bundler` - Optimized for Vite
+  </Tab>
+  <Tab title="Type Checking">
+    - **strict**: `true` - Enable all strict type checking options
+    - **noUnusedLocals**: `true` - Report unused local variables
+    - **noUnusedParameters**: `true` - Report unused function parameters
+    - **noFallthroughCasesInSwitch**: `true` - Prevent switch fallthrough bugs
+  </Tab>
+  <Tab title="Module Options">
+    - **allowImportingTsExtensions**: `true` - Allow importing `.ts` files
+    - **verbatimModuleSyntax**: `true` - Preserve exact import/export syntax
+    - **noEmit**: `true` - Don't emit JS files (Vite handles this)
+  </Tab>
+</Tabs>
+
+<Warning>
+  The `strict` mode is enabled, which enforces strict null checks, strict function types, and other safety features. This catches more bugs at compile time.
+</Warning>
+
+## Type Safety Benefits
+
+### Autocomplete and IntelliSense
+
+```tsx
+// TypeScript knows the shape of Character
+characters.map((character) => (
+    // Autocomplete suggests: id, name, portrait_path, age, gender, status, occupation
+    <div key={character.id}>
+        <h2>{character.name}</h2>
+        <p>{character.age}</p>
+    </div>
+))
+```
+
+### Type Checking
+
+```tsx
+// ❌ Error: Property 'foo' does not exist on type 'Character'
+character.foo
+
+// ✅ Correct
+character.name
+```
+
+### Null Safety
+
+```tsx
+// TypeScript ensures you handle undefined cases
+if (dataCharacters.results && Array.isArray(dataCharacters.results)) {
+    setCharacters(dataCharacters.results)
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Centralize Types" icon="file-code">
+    Keep all type definitions in `src/types.d.ts` for easy access and maintenance.
+  </Card>
+  <Card title="Use Type Imports" icon="arrow-right">
+    Import types with `import type` to indicate type-only imports that get removed at compile time.
+  </Card>
+  <Card title="Strict Mode" icon="shield">
+    Enable strict TypeScript checking to catch bugs early and improve code quality.
+  </Card>
+  <Card title="Type State" icon="database">
+    Always type your React state, especially for complex objects and arrays.
+  </Card>
+</CardGroup>
+
+## Type Inference
+
+TypeScript can infer many types automatically:
+
+```tsx
+// Type inferred as number
+const [page, setPage] = useState(1)
+
+// Type inferred as boolean
+const [loading, setLoading] = useState(true)
+
+// Explicitly typed for complex objects
+const [characters, setCharacters] = useState<Character[]>([])
+```
+
+<Tip>
+  Use explicit types for complex structures and arrays, but let TypeScript infer simple types like numbers and booleans.
+</Tip>
+
+## Type-Safe CSS Modules
+
+CSS Modules are imported with types:
+
+```tsx
+import CardStyle from './../styles/charather.module.css'
+
+// TypeScript ensures class names exist
+<div className={CardStyle.container}> // ✅ Valid
+<div className={CardStyle.foo}> // ❌ Error: Property 'foo' does not exist
+```
+
+## Common Patterns
+
+### Optional Properties
+
+```typescript
+export interface ImageProps {
+    src: string;
+    alt: string;
+    className?: string;  // Optional
+    showtext: boolean;
+}
+```
+
+### Union Types
+
+```typescript
+export interface Character {
+    age: number | string;  // Can be either type
+    status: string | undefined;  // Can be undefined
+}
+```
+
+### Array Types
+
+```typescript
+export interface Character {
+    occupation: string[] | undefined;  // Array of strings or undefined
+}
+
+export interface ApiResponse {
+    results: Character[] & Episode[];  // Array of Characters or Episodes
+}
+```
+
+## Error Prevention
+
+TypeScript catches common errors at compile time:
+
+<Tabs>
+  <Tab title="Typos">
+    ```tsx
+    // ❌ TypeScript error: 'portait_path' doesn't exist
+    character.portait_path
+    
+    // ✅ Correct
+    character.portrait_path
+    ```
+  </Tab>
+  <Tab title="Missing Properties">
+    ```tsx
+    // ❌ Error: Property 'page' is missing
+    <PAGE_COUNTER totalPages={60} />
+    
+    // ✅ All required props provided
+    <PAGE_COUNTER page={1} totalPages={60} showtitlePage={true} />
+    ```
+  </Tab>
+  <Tab title="Type Mismatches">
+    ```tsx
+    // ❌ Error: Type 'string' is not assignable to type 'number'
+    const [page, setPage] = useState(1)
+    setPage("1")
+    
+    // ✅ Correct type
+    setPage(1)
+    ```
+  </Tab>
+</Tabs>
+
+## Build-Time Type Checking
+
+The build script includes TypeScript compilation:
+
+```bash
+npm run build
+# Runs: tsc -b && vite build
+```
+
+<Note>
+  The `-b` flag enables build mode, which respects project references and builds incrementally.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+    Learn how TypeScript files are organized
+  </Card>
+  <Card title="Contributing" icon="code-pull-request" href="/development/contributing">
+    Guidelines for contributing with TypeScript
+  </Card>
+</CardGroup>
