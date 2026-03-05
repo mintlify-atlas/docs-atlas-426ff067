@@ -40,7 +40,12 @@ The components are organized into three main categories:
 - **NAV** - Main navigation bar with responsive menu
 
 ### Data Components (`data/`)
-- **EXPLORER_DATA** - Static data for the explorer page
+- **EXPLORER_DATA** - Static navigation data for the explorer page landing
+
+### Asset Exports (`assets/`)
+The application also exports static assets from `src/assets/index.ts`:
+- **POSTER** - Simpson family picture for homepage
+- **LOGO** - Los Simpson logo image
 
 <CardGroup cols={2}>
   <Card title="UI Components" icon="palette" href="/components/ui-components">
@@ -55,6 +60,28 @@ The components are organized into three main categories:
     Data fetching patterns and state management with hooks
   </Card>
 </CardGroup>
+
+## Explorer Data
+
+The `EXPLORER_DATA` constant provides navigation configuration for the explorer page:
+
+```typescript title="src/components/data/explorer.ts"
+export const EXPLORER_MAP = [
+    {
+        title: 'Popular Characters',
+        src: './../charathers',
+        imgsrc: 'https://i.pinimg.com/736x/b4/7b/61/b47b6168c9efcec09d271540c59777ec.jpg',
+    },
+    {
+        title: 'Episodes',
+        src: './../episodes',
+        imgsrc: 'https://http2.mlstatic.com/D_NQ_NP_792325-MLC51051409011_082022-O.webp',
+    },
+]
+export default EXPLORER_MAP
+```
+
+This data structure defines the cards shown on the explorer landing page, each with a title, route path, and preview image.
 
 ## Import Pattern
 

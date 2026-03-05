@@ -1,0 +1,148 @@
+---
+title: "Explorer Page"
+description: "Interactive landing page for navigating between Characters and Episodes sections"
+---
+
+## Overview
+
+The Explorer page serves as a visual navigation hub that helps users choose between browsing characters or episodes. It provides an intuitive interface with card-based navigation.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Visual Navigation" icon="grid">
+    Large, clickable cards with preview images for each section
+  </Card>
+  <Card title="Static Data" icon="database">
+    Uses EXPLORER_DATA constant for configuration
+  </Card>
+</CardGroup>
+
+## Implementation
+
+The Explorer page is implemented in `src/pages/explorer.tsx` and uses the `EXPLORER_DATA` configuration:
+
+```tsx title="src/pages/explorer.tsx" lines
+import { NAV, EXPLORER_DATA } from './../components/index.ts'
+import { Link } from 'react-router-dom'
+import ExplorerStyle from './../styles/explorer.module.css'
+import { IMAGE } from './../components/index.ts'
+import { useEffect } from 'react'
+
+export default function EXPLORER() {
+    useEffect(() => {
+        document.title = 'Explorer | The Simpson'
+    }, [])
+    
+    return (
+        <main>
+            <NAV showExplorerButton={false} />
+            <div className={ExplorerStyle.container}>
+                <h1>Explorer</h1>
+                <div className={ExplorerStyle.cardsContainer}>
+                    {EXPLORER_DATA.map((item, ex) => (
+                        <div key={ex} className={ExplorerStyle.card}>
+                            <Link to={item.src}>
+                                <h2>{item.title}</h2>
+                                <div className={ExplorerStyle.image}>
+                                    <IMAGE
+                                        src={item.imgsrc}
+                                        alt={item.title}
+                                        showtext={false}
+                                    />
+                                </div>
+                                <span>Click To Open</span>
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </main>
+    )
+}
+```
+
+## Explorer Data Configuration
+
+The page uses static data from `EXPLORER_DATA` to define available sections:
+
+```typescript title="src/components/data/explorer.ts" lines
+export const EXPLORER_MAP = [
+    {
+        title: 'Popular Characters',
+        src: './../charathers',
+        imgsrc: 'https://i.pinimg.com/736x/b4/7b/61/b47b6168c9efcec09d271540c59777ec.jpg',
+    },
+    {
+        title: 'Episodes',
+        src: './../episodes',
+        imgsrc: 'https://http2.mlstatic.com/D_NQ_NP_792325-MLC51051409011_082022-O.webp',
+    },
+]
+export default EXPLORER_MAP
+```
+
+### Data Structure
+
+Each item in the `EXPLORER_MAP` array contains:
+
+<ParamField path="title" type="string" required>
+  The display title shown on the card
+</ParamField>
+
+<ParamField path="src" type="string" required>
+  The relative route path to navigate to
+</ParamField>
+
+<ParamField path="imgsrc" type="string" required>
+  The URL of the preview image displayed on the card
+</ParamField>
+
+## Key Components Used
+
+The Explorer page integrates several components:
+
+- **NAV** - Navigation bar (with explorer button hidden since user is already on explorer)
+- **IMAGE** - Image loading component for preview images
+- **EXPLORER_DATA** - Static configuration data
+- **Link** - React Router Link component for navigation
+
+## Routing
+
+The Explorer page is accessible at the `/explorer` route:
+
+```tsx
+<Route path='/explorer' element={<Explorer />} />
+```
+
+Users can navigate to this page from the home page or using the "Explore" button in the navigation bar.
+
+## Styling
+
+The Explorer page uses CSS Modules for styling:
+
+```typescript
+import ExplorerStyle from './../styles/explorer.module.css'
+```
+
+The styles define the card layout, hover effects, and responsive behavior for the navigation cards.
+
+<Tip>
+  The Explorer page provides a user-friendly way to choose between browsing characters or episodes without cluttering the navigation menu.
+</Tip>
+
+## Usage Flow
+
+<Steps>
+  <Step title="Access Explorer">
+    Navigate to `/explorer` from the homepage or navigation menu
+  </Step>
+  
+  <Step title="Choose Section">
+    Click on either the "Popular Characters" or "Episodes" card
+  </Step>
+  
+  <Step title="Browse Content">
+    View the paginated list of characters or episodes
+  </Step>
+</Steps>

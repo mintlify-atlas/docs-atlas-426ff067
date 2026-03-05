@@ -38,6 +38,7 @@
         "pages": [
           "features/character-gallery",
           "features/episode-browser",
+          "features/explorer-page",
           "features/api-integration"
         ]
       },
